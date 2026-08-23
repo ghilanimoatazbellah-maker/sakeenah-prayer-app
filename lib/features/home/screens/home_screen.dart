@@ -194,19 +194,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
   AdhkarType _currentAdhkarType() {
     final now = DateTime.now();
-    final current = _prayerTimes.currentPrayer(date: now);
-    switch (current) {
-      case Prayer.fajr:
-      case Prayer.sunrise:
-      case Prayer.dhuhr:
-        return AdhkarType.sabah;
-      case Prayer.asr:
-      case Prayer.maghrib:
-        return AdhkarType.massa;
-      case Prayer.isha:
-      case Prayer.fajrAfter:
-      case Prayer.ishaBefore:
-        return AdhkarType.sleep;
+    try {
+      final current = _prayerTimes.currentPrayer(date: now);
+      switch (current) {
+        case Prayer.fajr:
+        case Prayer.sunrise:
+        case Prayer.dhuhr:
+          return AdhkarType.sabah;
+        case Prayer.asr:
+        case Prayer.maghrib:
+          return AdhkarType.massa;
+        case Prayer.isha:
+        case Prayer.fajrAfter:
+          return AdhkarType.sleep;
+        default:
+          break;
+      }
+    } catch (_) {}
+
+    // Precise Time-of-Day Fallback:
+    final hour = now.hour;
+    if (hour >= 4 && hour < 15) {
+      return AdhkarType.sabah;
+    } else if (hour >= 15 && hour < 22) {
+      return AdhkarType.massa;
+    } else {
+      return AdhkarType.sleep;
     }
   }
 

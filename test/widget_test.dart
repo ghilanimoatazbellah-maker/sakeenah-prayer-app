@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:prayer_adhkar_app/core/providers/adhkar_progress_notifier.dart';
 import 'package:prayer_adhkar_app/core/providers/location_notifier.dart';
 import 'package:prayer_adhkar_app/core/providers/theme_notifier.dart';
 import 'package:prayer_adhkar_app/core/theme/app_theme.dart';
@@ -75,4 +76,18 @@ void main() {
 
     expect(find.text('سَكِينة'), findsOneWidget);
   });
+
+  test('AdhkarProgressNotifier loads all sets correctly', () async {
+    final notifier = AdhkarProgressNotifier();
+    // Wait for async initialization
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    for (final type in AdhkarType.values) {
+      if (type == AdhkarType.custom) {
+        expect(notifier.getSet(type), isNotNull);
+        expect(notifier.getSet(type)!.items.isNotEmpty, true);
+      }
+    }
+  });
 }
+

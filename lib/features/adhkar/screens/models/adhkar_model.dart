@@ -7,9 +7,10 @@ class AdhkarSet {
   AdhkarSet({required this.title, required this.items});
 
   factory AdhkarSet.fromJson(Map<String, dynamic> json) {
+    final list = json['content'] as List? ?? [];
     return AdhkarSet(
-      title: json['title'] as String,
-      items: (json['content'] as List)
+      title: (json['title'] ?? '') as String,
+      items: list
           .map((e) => AdhkarItem.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
@@ -29,9 +30,11 @@ class AdhkarItem {
 
   factory AdhkarItem.fromJson(Map<String, dynamic> json) {
     return AdhkarItem(
-      zekr: json['zekr'] as String,
-      repeat: json['repeat'] as int,
-      bless: json['bless'] as String,
+      zekr: (json['zekr'] ?? '') as String,
+      repeat: json['repeat'] is int
+          ? json['repeat'] as int
+          : int.tryParse(json['repeat']?.toString() ?? '1') ?? 1,
+      bless: (json['bless'] ?? '') as String,
     );
   }
 }
