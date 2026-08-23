@@ -569,16 +569,19 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                             ),
                             const SizedBox(width: 4),
                           ],
-                          Text(
-                            '$currentCount / $repeat',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w900,
-                              color: done
-                                  ? Colors.white
-                                  : (isDark
-                                      ? const Color(0xFF261900)
-                                      : const Color(0xFF422E00)),
+                          Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Text(
+                              '$currentCount / $repeat',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                color: done
+                                    ? Colors.white
+                                    : (isDark
+                                        ? const Color(0xFF261900)
+                                        : const Color(0xFF422E00)),
+                              ),
                             ),
                           ),
                         ],

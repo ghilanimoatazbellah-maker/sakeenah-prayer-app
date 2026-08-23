@@ -110,70 +110,94 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             const SizedBox(height: 8),
-            ListTile(
-              shape: RoundedRectangleBorder(
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: isDark ? AppColorsDark.level1Card : AppColors.level1Card,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                side: BorderSide(
+                border: Border.all(
                   color: isDark
-                      ? AppColorsDark.outlineVariant
-                      : AppColors.surfaceContainerHighest,
+                      ? const Color(0xFFFED488).withValues(alpha: 0.4)
+                      : const Color(0xFFE5B558).withValues(alpha: 0.4),
+                  width: 1.2,
                 ),
               ),
-              tileColor: isDark
-                  ? AppColorsDark.level1Card
-                  : AppColors.level1Card,
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColorsDark.secondary.withValues(alpha: 0.15)
-                      : AppColors.secondary.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.notifications_active_rounded,
-                  color: isDark ? AppColorsDark.secondary : AppColors.secondary,
-                  size: 20,
-                ),
-              ),
-              title: Text(
-                'تجربة إشعار الأذان الفوري',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14.5,
-                  color: isDark ? AppColorsDark.onSurface : AppColors.onSurface,
-                ),
-              ),
-              subtitle: Text(
-                'إرسال إشعار تجريبي لاختبار الصوت والظهور',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark
-                      ? AppColorsDark.onSurfaceVariant
-                      : AppColors.onSurfaceVariant,
-                ),
-              ),
-              trailing: Icon(
-                Icons.send_rounded,
-                color: isDark ? AppColorsDark.secondary : AppColors.secondary,
-                size: 18,
-              ),
-              onTap: () async {
-                final messenger = ScaffoldMessenger.of(context);
-                await NotificationService.showInstantNotification(
-                  id: 1001,
-                  title: 'حان الآن وقت صلاة الظهر 🕌',
-                  body: 'حي على الصلاة، حي على الفلاح — تجربة تطبيق سَكِينة',
-                );
-                if (mounted) {
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('تم إرسال إشعار التجربة بنجاح!'),
-                      duration: Duration(seconds: 2),
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  onTap: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    await NotificationService.showInstantNotification(
+                      id: 1001,
+                      title: 'حان الآن وقت صلاة الظهر 🕌',
+                      body: 'حي على الصلاة، حي على الفلاح — تجربة تطبيق سَكِينة',
+                    );
+                    if (mounted) {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('تم إرسال إشعار التجربة بنجاح! تفقد شريط الإشعارات 🔔'),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFFFED488).withValues(alpha: 0.18)
+                                : const Color(0xFFFED488).withValues(alpha: 0.25),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.notifications_active_rounded,
+                            color: isDark ? const Color(0xFFFED488) : AppColors.secondary,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'تجربة إشعار الأذان الفوري',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                  color: isDark ? AppColorsDark.onSurface : AppColors.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'اضغط هنا لإرسال إشعار تجريبي فوري',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: isDark
+                                      ? const Color(0xFFFED488)
+                                      : AppColors.secondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.send_rounded,
+                          color: isDark ? const Color(0xFFFED488) : AppColors.secondary,
+                          size: 20,
+                        ),
+                      ],
                     ),
-                  );
-                }
-              },
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             _buildSectionHeader('الموقع والمدينة', isDark),
