@@ -10,22 +10,10 @@ import 'core/theme/app_theme.dart';
 import 'features/root_shell.dart';
 import 'services/notification_service.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Safe portrait lock
-  try {
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-  } catch (_) {}
-
-  // Safe notification service initialization
-  try {
-    await NotificationService.initialize();
-  } catch (_) {}
-
+  // Launch UI immediately on the first frame
   runApp(
     MultiProvider(
       providers: [
@@ -37,6 +25,22 @@ void main() async {
       child: const PrayerAdhkarApp(),
     ),
   );
+
+  // Initialize secondary services asynchronously in background
+  _initServicesAsync();
+}
+
+void _initServicesAsync() {
+  try {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  } catch (_) {}
+
+  try {
+    NotificationService.initialize();
+  } catch (_) {}
 }
 
 class PrayerAdhkarApp extends StatelessWidget {

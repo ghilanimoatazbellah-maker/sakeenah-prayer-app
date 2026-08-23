@@ -32,7 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
   PrayerDisplayMode _displayMode = PrayerDisplayMode.upcomingCountdown;
   String _heroPrayerTitle = '';
   String _heroPrayerSubtitle = '';
-  String _timerText = '';
+  String _timerDigits = '00:00:00';
+  String _timerLabel = '';
   Prayer? _activeHighlightedPrayer;
 
   @override
@@ -123,13 +124,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (recentlyPassedPrayer != null) {
-      // 1. Within 30 min window: Count UP (+00:15:20 بعد الأذان)
+      // 1. Within 30 min window: Count UP (+00:15:20 بعد الصلاة)
       final elapsed = now.difference(recentlyPassedPrayer.$3);
       setState(() {
         _displayMode = PrayerDisplayMode.postAdhanActive;
         _heroPrayerSubtitle = 'حان الآن وقت صلاة';
         _heroPrayerTitle = recentlyPassedPrayer!.$2;
-        _timerText = '+${_formatDuration(elapsed)} بعد الصلاة';
+        _timerDigits = _formatDuration(elapsed);
+        _timerLabel = 'بعد الصلاة';
         _activeHighlightedPrayer = recentlyPassedPrayer.$1;
       });
     } else {
@@ -142,7 +144,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _displayMode = PrayerDisplayMode.upcomingCountdown;
         _heroPrayerSubtitle = 'الصلاة القادمة بإذن الله';
         _heroPrayerTitle = _prayerNameArabic(nextPrayer);
-        _timerText = '${_formatDuration(remaining)} متبقية';
+        _timerDigits = _formatDuration(remaining);
+        _timerLabel = 'متبقية';
         _activeHighlightedPrayer = nextPrayer;
       });
     }
@@ -481,14 +484,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                child: Text(
-                  _timerText,
-                  style: const TextStyle(
-                    color: Color(0xFFFED488),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.0,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: Text(
+                        isActivePost ? '+$_timerDigits' : _timerDigits,
+                        style: const TextStyle(
+                          color: Color(0xFFFED488),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _timerLabel,
+                      style: const TextStyle(
+                        color: Color(0xFFFED488),
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
