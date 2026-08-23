@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/theme/app_theme.dart';
 import 'adhkar/screens/adhkar_screen.dart';
 import 'home/screens/home_screen.dart';
@@ -47,7 +48,7 @@ class _RootShellState extends State<RootShell> {
         if (nav != null && nav.canPop()) {
           nav.pop();
         } else {
-          // Exit the app if nothing to pop on the root tab
+          SystemNavigator.pop();
         }
       },
       child: Scaffold(
