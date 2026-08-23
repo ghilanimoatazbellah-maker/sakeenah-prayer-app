@@ -171,6 +171,16 @@ class AdhkarProgressNotifier extends ChangeNotifier {
 
   // ── Public API ──────────────────────────────────────────────────────────
 
+  Future<void> ensureLoaded(AdhkarType type) async {
+    if (_sets[type] == null) {
+      if (type == AdhkarType.custom) {
+        await _loadCustomSet();
+      } else {
+        await _loadSet(type);
+      }
+    }
+  }
+
   AdhkarSet? getSet(AdhkarType type) => _sets[type];
 
   /// Current count for a specific dhikr item.

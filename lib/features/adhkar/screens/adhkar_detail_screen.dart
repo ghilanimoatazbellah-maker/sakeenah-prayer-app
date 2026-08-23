@@ -6,7 +6,7 @@ import '../../../core/theme/app_theme.dart';
 /// Adhkar Detail Screen — shows the full list of adhkar cards
 /// for a specific selected category with live tap-to-count,
 /// Quranic typography, and individual repeat buttons.
-class AdhkarDetailScreen extends StatelessWidget {
+class AdhkarDetailScreen extends StatefulWidget {
   final AdhkarType type;
   final String title;
   final IconData icon;
@@ -19,6 +19,21 @@ class AdhkarDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<AdhkarDetailScreen> createState() => _AdhkarDetailScreenState();
+}
+
+class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AdhkarProgressNotifier>().ensureLoaded(widget.type);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -27,7 +42,7 @@ class AdhkarDetailScreen extends StatelessWidget {
           isDark ? AppColorsDark.background : AppColors.background,
       appBar: AppBar(
         title: Text(
-          title,
+          widget.title,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
@@ -49,11 +64,21 @@ class AdhkarDetailScreen extends StatelessWidget {
       ),
       body: Consumer<AdhkarProgressNotifier>(
         builder: (context, notifier, _) {
-          final set = notifier.getSet(type);
+          final set = notifier.getSet(widget.type);
           final items = set?.items ?? [];
-          final completed = notifier.completedCount(type);
+          final completed = notifier.completedCount(widget.type);
           final total = items.length;
           final isAllDone = total > 0 && completed == total;
+
+          if (set == null) {
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation(
+                  isDark ? AppColorsDark.secondary : AppColors.secondary,
+                ),
+              ),
+            );
+          }
 
           return Column(
             children: [
@@ -64,7 +89,7 @@ class AdhkarDetailScreen extends StatelessWidget {
                 total,
                 isAllDone,
                 isDark,
-                onResetAll: () => notifier.reset(type),
+                onResetAll: () => notifier.reset(widget.type),
               ),
 
               // Full Adhkar Scrollable List
@@ -89,7 +114,7 @@ class AdhkarDetailScreen extends StatelessWidget {
                         itemCount: items.length,
                         itemBuilder: (context, index) {
                           final item = items[index];
-                          final count = notifier.getCount(type, index);
+                          final count = notifier.getCount(widget.type, index);
                           final done = count >= item.repeat;
                           final progress = item.repeat > 0
                               ? (count / item.repeat).clamp(0.0, 1.0)
@@ -106,10 +131,10 @@ class AdhkarDetailScreen extends StatelessWidget {
                             done: done,
                             progress: progress,
                             isDark: isDark,
-                            isCustom: type == AdhkarType.custom,
-                            onTap: () => notifier.increment(type, index),
-                            onReset: () => notifier.resetItem(type, index),
-                            onDelete: type == AdhkarType.custom
+                            isCustom: widget.type == AdhkarType.custom,
+                            onTap: () => notifier.increment(widget.type, index),
+                            onReset: () => notifier.resetItem(widget.type, index),
+                            onDelete: widget.type == AdhkarType.custom
                                 ? () => notifier.deleteCustomDhikr(index)
                                 : null,
                           );

@@ -681,101 +681,98 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
         };
 
-        return Material(
-          color: isDark ? AppColorsDark.level1Card : AppColors.level1Card,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          child: InkWell(
-            onTap: () {
-              Navigator.of(context, rootNavigator: true).push(
-                MaterialPageRoute(
-                  builder: (_) => AdhkarDetailScreen(
-                    type: type,
-                    title: label,
-                    icon: icon,
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(
+                builder: (_) => AdhkarDetailScreen(
+                  type: type,
+                  title: label,
+                  icon: icon,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isDark ? AppColorsDark.level1Card : AppColors.level1Card,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(
+                color: isDark
+                    ? AppColorsDark.outlineVariant
+                    : AppColors.surfaceContainerHighest,
+              ),
+              boxShadow: AppShadows.liftedPaper,
+            ),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        value: fraction,
+                        strokeWidth: 5.5,
+                        backgroundColor: isDark
+                            ? AppColorsDark.surfaceContainer
+                            : AppColors.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation(
+                          isDark
+                              ? AppColorsDark.secondary
+                              : AppColors.secondary,
+                        ),
+                      ),
+                      Text(
+                        '$pct%',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-                border: Border.all(
+                const SizedBox(width: 18),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: isDark
+                              ? AppColorsDark.primary
+                              : AppColors.primary,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: isDark
+                              ? AppColorsDark.onSurfaceVariant
+                              : AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
                   color: isDark
-                      ? AppColorsDark.outlineVariant
-                      : AppColors.surfaceContainerHighest,
+                      ? AppColorsDark.onSurfaceVariant
+                      : AppColors.onSurfaceVariant,
                 ),
-                boxShadow: AppShadows.liftedPaper,
-              ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 60,
-                    height: 60,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        CircularProgressIndicator(
-                          value: fraction,
-                          strokeWidth: 5.5,
-                          backgroundColor: isDark
-                              ? AppColorsDark.surfaceContainer
-                              : AppColors.surfaceContainerHighest,
-                          valueColor: AlwaysStoppedAnimation(
-                            isDark
-                                ? AppColorsDark.secondary
-                                : AppColors.secondary,
-                          ),
-                        ),
-                        Text(
-                          '$pct%',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 18),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          label,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: isDark
-                                ? AppColorsDark.primary
-                                : AppColors.primary,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          subtitle,
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            color: isDark
-                                ? AppColorsDark.onSurfaceVariant
-                                : AppColors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 16,
-                    color: isDark
-                        ? AppColorsDark.onSurfaceVariant
-                        : AppColors.onSurfaceVariant,
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
         );
