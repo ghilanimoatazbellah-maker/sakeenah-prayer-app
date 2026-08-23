@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/providers/adhkar_progress_notifier.dart';
 import '../../../core/theme/app_theme.dart';
 
 /// Adhkar Detail Screen — shows the full list of adhkar cards
 /// for a specific selected category with live tap-to-count,
-/// Quranic typography, and individual repeat buttons.
+/// Quranic typography, pinch-to-zoom text scaling, and compact top banner.
 class AdhkarDetailScreen extends StatefulWidget {
   final AdhkarType type;
   final String title;
@@ -23,14 +24,38 @@ class AdhkarDetailScreen extends StatefulWidget {
 }
 
 class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
+  double _fontScale = 1.0;
+  double _baseScale = 1.0;
+
   @override
   void initState() {
     super.initState();
+    _loadFontScale();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<AdhkarProgressNotifier>().ensureLoaded(widget.type);
       }
     });
+  }
+
+  Future<void> _loadFontScale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getDouble('adhkar_font_scale');
+    if (saved != null && mounted) {
+      setState(() => _fontScale = saved.clamp(0.75, 1.5));
+    }
+  }
+
+  Future<void> _saveFontScale(double scale) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('adhkar_font_scale', scale);
+  }
+
+  void _adjustScale(double delta) {
+    setState(() {
+      _fontScale = (_fontScale + delta).clamp(0.75, 1.5);
+    });
+    _saveFontScale(_fontScale);
   }
 
   @override
@@ -44,7 +69,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
         title: Text(
           widget.title,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.w800,
             color: isDark ? AppColorsDark.onSurface : AppColors.onSurface,
           ),
@@ -56,11 +81,27 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            size: 20,
+            size: 19,
             color: isDark ? AppColorsDark.onSurface : AppColors.onSurface,
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          // Quick Font Size Buttons
+          IconButton(
+            icon: const Icon(Icons.text_decrease_rounded, size: 20),
+            tooltip: 'تصغير الخط',
+            color: isDark ? AppColorsDark.secondary : AppColors.secondary,
+            onPressed: () => _adjustScale(-0.1),
+          ),
+          IconButton(
+            icon: const Icon(Icons.text_increase_rounded, size: 22),
+            tooltip: 'تكبير الخط',
+            color: isDark ? AppColorsDark.secondary : AppColors.secondary,
+            onPressed: () => _adjustScale(0.1),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: Consumer<AdhkarProgressNotifier>(
         builder: (context, notifier, _) {
@@ -82,7 +123,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
 
           return Column(
             children: [
-              // Top Progress Banner
+              // Sleek, Compact Top Progress Banner
               _buildTopProgressBanner(
                 context,
                 completed,
@@ -92,7 +133,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                 onResetAll: () => notifier.reset(widget.type),
               ),
 
-              // Full Adhkar Scrollable List
+              // Adhkar List with Pinch-to-Zoom Gesture Support
               Expanded(
                 child: items.isEmpty
                     ? Center(
@@ -102,43 +143,63 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                             color: isDark
                                 ? AppColorsDark.onSurfaceVariant
                                 : AppColors.onSurfaceVariant,
-                            fontSize: 16,
+                            fontSize: 15,
                           ),
                         ),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.containerMargin,
-                          vertical: 16,
-                        ),
-                        itemCount: items.length,
-                        itemBuilder: (context, index) {
-                          final item = items[index];
-                          final count = notifier.getCount(widget.type, index);
-                          final done = count >= item.repeat;
-                          final progress = item.repeat > 0
-                              ? (count / item.repeat).clamp(0.0, 1.0)
-                              : 0.0;
-
-                          return _buildZekrCard(
-                            context: context,
-                            index: index + 1,
-                            totalItems: items.length,
-                            zekr: item.zekr,
-                            bless: item.bless,
-                            repeat: item.repeat,
-                            currentCount: count,
-                            done: done,
-                            progress: progress,
-                            isDark: isDark,
-                            isCustom: widget.type == AdhkarType.custom,
-                            onTap: () => notifier.increment(widget.type, index),
-                            onReset: () => notifier.resetItem(widget.type, index),
-                            onDelete: widget.type == AdhkarType.custom
-                                ? () => notifier.deleteCustomDhikr(index)
-                                : null,
-                          );
+                    : GestureDetector(
+                        onScaleStart: (details) {
+                          _baseScale = _fontScale;
                         },
+                        onScaleUpdate: (details) {
+                          if (details.scale != 1.0) {
+                            setState(() {
+                              _fontScale = (_baseScale * details.scale)
+                                  .clamp(0.75, 1.5);
+                            });
+                          }
+                        },
+                        onScaleEnd: (details) {
+                          _saveFontScale(_fontScale);
+                        },
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            final item = items[index];
+                            final count =
+                                notifier.getCount(widget.type, index);
+                            final done = count >= item.repeat;
+                            final progress = item.repeat > 0
+                                ? (count / item.repeat).clamp(0.0, 1.0)
+                                : 0.0;
+
+                            return _buildZekrCard(
+                              context: context,
+                              index: index + 1,
+                              totalItems: items.length,
+                              zekr: item.zekr,
+                              bless: item.bless,
+                              repeat: item.repeat,
+                              currentCount: count,
+                              done: done,
+                              progress: progress,
+                              isDark: isDark,
+                              fontScale: _fontScale,
+                              isCustom: widget.type == AdhkarType.custom,
+                              onTap: () =>
+                                  notifier.increment(widget.type, index),
+                              onReset: () =>
+                                  notifier.resetItem(widget.type, index),
+                              onDelete: widget.type == AdhkarType.custom
+                                  ? () => notifier.deleteCustomDhikr(index)
+                                  : null,
+                            );
+                          },
+                        ),
                       ),
               ),
             ],
@@ -157,9 +218,10 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
     required VoidCallback onResetAll,
   }) {
     final pct = total > 0 ? ((completed / total) * 100).round() : 0;
+    final fraction = total > 0 ? (completed / total).clamp(0.0, 1.0) : 0.0;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isDark
             ? (isAllDone
@@ -176,51 +238,92 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
           ),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                isAllDone
-                    ? Icons.check_circle_rounded
-                    : Icons.pie_chart_rounded,
-                color: isAllDone
-                    ? (isDark ? const Color(0xFF7EBDAC) : AppColors.primary)
-                    : (isDark ? const Color(0xFFFED488) : AppColors.secondary),
-                size: 20,
+              Row(
+                children: [
+                  Icon(
+                    isAllDone
+                        ? Icons.check_circle_rounded
+                        : Icons.pie_chart_rounded,
+                    color: isAllDone
+                        ? (isDark ? const Color(0xFF7EBDAC) : AppColors.primary)
+                        : (isDark
+                            ? const Color(0xFFFED488)
+                            : AppColors.secondary),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'المنجز: $completed من $total ($pct%)',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: isDark
+                          ? AppColorsDark.onSurface
+                          : AppColors.onSurface,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                'المنجز: $completed من $total ($pct%)',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: isDark
-                      ? AppColorsDark.onSurface
-                      : AppColors.onSurface,
+              if (completed > 0)
+                InkWell(
+                  onTap: onResetAll,
+                  borderRadius: BorderRadius.circular(AppRadius.base),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.refresh_rounded,
+                          size: 14,
+                          color: isDark
+                              ? const Color(0xFFFED488)
+                              : AppColors.secondary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'إعادة القسم',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? const Color(0xFFFED488)
+                                : AppColors.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
-          if (completed > 0)
-            TextButton.icon(
-              onPressed: onResetAll,
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                foregroundColor: isDark
-                    ? const Color(0xFFFED488)
-                    : AppColors.secondary,
-              ),
-              icon: const Icon(Icons.refresh_rounded, size: 16),
-              label: const Text(
-                'إعادة القسم',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
+          const SizedBox(height: 5),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.full),
+            child: LinearProgressIndicator(
+              value: fraction,
+              minHeight: 3,
+              backgroundColor: isDark
+                  ? const Color(0xFF223A33)
+                  : const Color(0xFFE2EBE7),
+              valueColor: AlwaysStoppedAnimation(
+                isAllDone
+                    ? (isDark
+                        ? const Color(0xFF7EBDAC)
+                        : AppColors.primary)
+                    : (isDark
+                        ? const Color(0xFFFED488)
+                        : AppColors.secondary),
               ),
             ),
+          ),
         ],
       ),
     );
@@ -237,13 +340,17 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
     required bool done,
     required double progress,
     required bool isDark,
+    required double fontScale,
     required bool isCustom,
     required VoidCallback onTap,
     required VoidCallback onReset,
     VoidCallback? onDelete,
   }) {
+    final zekrFontSize = (17.5 * fontScale).clamp(14.0, 28.0);
+    final blessFontSize = (12.5 * fontScale).clamp(10.5, 18.0);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: done
             ? (isDark
@@ -252,7 +359,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
             : (isDark
                 ? const Color(0xFF142420)
                 : Colors.white),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
           color: done
               ? (isDark
@@ -261,37 +368,37 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
               : (isDark
                   ? const Color(0xFF2D4B42)
                   : const Color(0xFFE0E7E4)),
-          width: done ? 1.8 : 1.2,
+          width: done ? 1.5 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           splashColor: const Color(0xFFFED488).withValues(alpha: 0.12),
           highlightColor: const Color(0xFFFED488).withValues(alpha: 0.06),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Top Meta Header
+                // Top Header Badge Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 11,
-                        vertical: 5,
+                        horizontal: 9,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: isDark
@@ -302,7 +409,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                       child: Text(
                         'ذكر $index من $totalItems',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w700,
                           color: isDark
                               ? const Color(0xFFD4E7E1)
@@ -314,8 +421,8 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 5,
+                            horizontal: 11,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
                             color: done
@@ -336,13 +443,13 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                                   : (isDark
                                       ? const Color(0xFFFED488)
                                       : AppColors.secondary),
-                              width: 1.2,
+                              width: 1.0,
                             ),
                           ),
                           child: Text(
                             repeat == 1 ? 'مرة واحدة' : '$repeat مرات',
                             style: TextStyle(
-                              fontSize: 12.5,
+                              fontSize: 11.5,
                               fontWeight: FontWeight.w800,
                               color: done
                                   ? (isDark
@@ -358,7 +465,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                           const SizedBox(width: 6),
                           IconButton(
                             icon: const Icon(Icons.delete_outline_rounded,
-                                size: 20, color: AppColors.error),
+                                size: 18, color: AppColors.error),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             onPressed: onDelete,
@@ -369,16 +476,16 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
 
-                // Arabic Zekr Text (High Definition Pure White in Dark Mode)
+                // Arabic Zekr Text (Comfortable size & Pinch-to-zoom scalable)
                 Text(
                   zekr,
                   textAlign: TextAlign.right,
                   textDirection: TextDirection.rtl,
                   style: TextStyle(
-                    fontSize: 21,
-                    height: 2.1,
+                    fontSize: zekrFontSize,
+                    height: 1.9,
                     fontWeight: FontWeight.w700,
                     color: done
                         ? (isDark
@@ -390,13 +497,13 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                   ),
                 ),
 
-                // Blessing / Virtue (Super High Contrast in Dark Mode)
+                // Blessing / Virtue
                 if (bless.trim().isNotEmpty) ...[
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                      horizontal: 12,
+                      vertical: 9,
                     ),
                     decoration: BoxDecoration(
                       color: isDark
@@ -407,7 +514,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                         color: isDark
                             ? const Color(0xFFFED488)
                             : const Color(0xFFE5B558),
-                        width: 1.3,
+                        width: 1.1,
                       ),
                     ),
                     child: Row(
@@ -415,22 +522,22 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                       children: [
                         Icon(
                           Icons.auto_awesome_rounded,
-                          size: 18,
+                          size: 15,
                           color: isDark
                               ? const Color(0xFFFED488)
                               : const Color(0xFF8A6200),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             bless,
                             textAlign: TextAlign.right,
                             textDirection: TextDirection.rtl,
                             style: TextStyle(
-                              fontSize: 13.5,
-                              height: 1.65,
+                              fontSize: blessFontSize,
+                              height: 1.55,
                               color: isDark
-                                  ? const Color(0xFFFFF1C2)
+                                  ? const Color(0xFFFFE082)
                                   : const Color(0xFF5D4200),
                               fontWeight: FontWeight.w700,
                             ),
@@ -441,14 +548,14 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                   ),
                 ],
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
 
                 // Mini Progress Bar
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppRadius.full),
                   child: LinearProgressIndicator(
                     value: progress,
-                    minHeight: 6,
+                    minHeight: 4.5,
                     backgroundColor: isDark
                         ? const Color(0xFF223A33)
                         : const Color(0xFFE2EBE7),
@@ -464,7 +571,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // Bottom Action: Tap hint / Reset Button + Counter Button
                 Row(
@@ -478,8 +585,8 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                           borderRadius: BorderRadius.circular(AppRadius.full),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
+                              horizontal: 12,
+                              vertical: 6,
                             ),
                             decoration: BoxDecoration(
                               color: isDark
@@ -498,16 +605,16 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                               children: [
                                 Icon(
                                   Icons.refresh_rounded,
-                                  size: 16,
+                                  size: 14,
                                   color: isDark
                                       ? const Color(0xFFAFEFDD)
                                       : const Color(0xFF00382E),
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 5),
                                 Text(
                                   'إعادة الذكر',
                                   style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w800,
                                     color: isDark
                                         ? const Color(0xFFAFEFDD)
@@ -523,7 +630,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                       Text(
                         'المس البطاقة للتسبيح',
                         style: TextStyle(
-                          fontSize: 12.5,
+                          fontSize: 11.5,
                           color: isDark
                               ? const Color(0xFFAABEB8)
                               : AppColors.onSurfaceVariant,
@@ -534,8 +641,8 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                     // Counter Pill Indicator
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
+                        horizontal: 16,
+                        vertical: 7,
                       ),
                       decoration: BoxDecoration(
                         color: done
@@ -553,8 +660,8 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                                         ? const Color(0xFF004D40)
                                         : AppColors.primaryContainer)
                                     : const Color(0xFFFED488))
-                                .withValues(alpha: 0.35),
-                            blurRadius: 10,
+                                .withValues(alpha: 0.30),
+                            blurRadius: 6,
                           ),
                         ],
                       ),
@@ -564,7 +671,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                           if (done) ...[
                             const Icon(
                               Icons.check_rounded,
-                              size: 17,
+                              size: 15,
                               color: Colors.white,
                             ),
                             const SizedBox(width: 4),
@@ -574,7 +681,7 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                             child: Text(
                               '$currentCount / $repeat',
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 13.5,
                                 fontWeight: FontWeight.w900,
                                 color: done
                                     ? Colors.white
