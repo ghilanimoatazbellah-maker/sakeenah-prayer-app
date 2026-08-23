@@ -502,14 +502,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Directionality(
                       textDirection: TextDirection.ltr,
-                      child: Text(
-                        isActivePost ? '+$_timerDigits' : _timerDigits,
-                        style: const TextStyle(
-                          color: Color(0xFFFED488),
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.0,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isActivePost)
+                            const Text(
+                              '+ ',
+                              style: TextStyle(
+                                color: Color(0xFFFED488),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          Text(
+                            _timerDigits,
+                            style: const TextStyle(
+                              color: Color(0xFFFED488),
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),
