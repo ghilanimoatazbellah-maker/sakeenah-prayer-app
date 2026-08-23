@@ -154,7 +154,7 @@ lib/
 
 | الرئيسية (Home) | الأذكار (Adhkar) | القراءة والتسبيح (Counter) | القبلة (Qibla) |
 | :---: | :---: | :---: | :---: |
-| ![Home](assets/icons/app_icon.png) | ![Adhkar](assets/icons/app_icon.png) | ![Counter](assets/icons/app_icon.png) | ![Qibla](assets/icons/app_icon.png) |
+| <img src="assets/screenshots/home.png" width="220" /> | <img src="assets/screenshots/adhkar.png" width="220" /> | <img src="assets/screenshots/counter.png" width="220" /> | <img src="assets/screenshots/qibla.png" width="220" /> |
 
 ---
 
