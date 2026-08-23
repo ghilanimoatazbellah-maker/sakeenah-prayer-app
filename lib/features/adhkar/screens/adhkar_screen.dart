@@ -211,7 +211,7 @@ class AdhkarScreen extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(AppRadius.xl),
               onTap: () {
-                Navigator.of(context, rootNavigator: true).push(
+                Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => AdhkarDetailScreen(
                       type: type,

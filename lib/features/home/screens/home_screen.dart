@@ -684,7 +684,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            Navigator.of(context, rootNavigator: true).push(
+            Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => AdhkarDetailScreen(
                   type: type,
