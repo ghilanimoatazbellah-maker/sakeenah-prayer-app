@@ -34,25 +34,11 @@ class AdhkarScreen extends StatelessWidget {
       Color(0xFF2E6F9E),
     ),
     (
-      AdhkarType.afterPrayer,
-      'أذكار بعد الصلاة المفروضة',
-      'التسبيح والتهليل والاستغفار دبر كل صلاة',
-      Icons.mosque_rounded,
-      Color(0xFF29695B),
-    ),
-    (
       AdhkarType.ruqyah,
       'الرقية الشرعية والأدعية',
       'حصن من العين والحسد والشفاء بإذن الله',
       Icons.shield_rounded,
       Color(0xFF785A1A),
-    ),
-    (
-      AdhkarType.custom,
-      'أذكاري المخصصة',
-      'أذكارك وأورادك الخاصة التي قمت بإضافتها',
-      Icons.star_rounded,
-      Color(0xFFD48806),
     ),
   ];
 

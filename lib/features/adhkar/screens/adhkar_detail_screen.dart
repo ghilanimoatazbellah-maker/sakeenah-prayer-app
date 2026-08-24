@@ -87,18 +87,89 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
-          // Quick Font Size Buttons
-          IconButton(
-            icon: const Icon(Icons.text_decrease_rounded, size: 20),
-            tooltip: 'تصغير الخط',
-            color: isDark ? AppColorsDark.secondary : AppColors.secondary,
-            onPressed: () => _adjustScale(-0.1),
-          ),
-          IconButton(
-            icon: const Icon(Icons.text_increase_rounded, size: 22),
-            tooltip: 'تكبير الخط',
-            color: isDark ? AppColorsDark.secondary : AppColors.secondary,
-            onPressed: () => _adjustScale(0.1),
+          // Connected Dual Pill Zoom Buttons (- | +)
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xFF1B3830)
+                  : const Color(0xFFE4EFEA),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+              border: Border.all(
+                color: isDark
+                    ? const Color(0xFFFED488).withValues(alpha: 0.55)
+                    : const Color(0xFF29695B).withValues(alpha: 0.4),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: (isDark ? const Color(0xFFFED488) : AppColors.primary)
+                      .withValues(alpha: 0.12),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Minus (-) Button
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: const BorderRadius.horizontal(
+                      right: Radius.circular(AppRadius.full),
+                    ),
+                    onTap: () => _adjustScale(-0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      child: Icon(
+                        Icons.remove_rounded,
+                        size: 18,
+                        color: isDark
+                            ? const Color(0xFFFED488)
+                            : const Color(0xFF00382E),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Sleek Vertical Divider
+                Container(
+                  width: 1.2,
+                  height: 16,
+                  color: isDark
+                      ? const Color(0xFFFED488).withValues(alpha: 0.35)
+                      : const Color(0xFF29695B).withValues(alpha: 0.35),
+                ),
+
+                // Plus (+) Button
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: const BorderRadius.horizontal(
+                      left: Radius.circular(AppRadius.full),
+                    ),
+                    onTap: () => _adjustScale(0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      child: Icon(
+                        Icons.add_rounded,
+                        size: 18,
+                        color: isDark
+                            ? const Color(0xFFFED488)
+                            : const Color(0xFF00382E),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(width: 4),
         ],
@@ -271,34 +342,51 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                 ],
               ),
               if (completed > 0)
-                InkWell(
-                  onTap: onResetAll,
-                  borderRadius: BorderRadius.circular(AppRadius.base),
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.refresh_rounded,
-                          size: 14,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onResetAll,
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF381818)
+                            : const Color(0xFFFFECEB),
+                        borderRadius: BorderRadius.circular(AppRadius.full),
+                        border: Border.all(
                           color: isDark
-                              ? const Color(0xFFFED488)
-                              : AppColors.secondary,
+                              ? const Color(0xFFE57373)
+                              : const Color(0xFFD32F2F),
+                          width: 1.0,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'إعادة القسم',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.refresh_rounded,
+                            size: 13,
                             color: isDark
-                                ? const Color(0xFFFED488)
-                                : AppColors.secondary,
+                                ? const Color(0xFFFF8A80)
+                                : const Color(0xFFC62828),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Text(
+                            'إعادة القسم',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: isDark
+                                  ? const Color(0xFFFF8A80)
+                                  : const Color(0xFFC62828),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -590,14 +678,15 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? const Color(0xFF1E5245)
-                                  : const Color(0xFFD4EAE2),
+                                  ? const Color(0xFF381818)
+                                  : const Color(0xFFFFECEB),
                               borderRadius:
                                   BorderRadius.circular(AppRadius.full),
                               border: Border.all(
                                 color: isDark
-                                    ? const Color(0xFF7EBDAC)
-                                    : const Color(0xFF29695B),
+                                    ? const Color(0xFFE57373)
+                                    : const Color(0xFFD32F2F),
+                                width: 1.1,
                               ),
                             ),
                             child: Row(
@@ -607,8 +696,8 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                                   Icons.refresh_rounded,
                                   size: 14,
                                   color: isDark
-                                      ? const Color(0xFFAFEFDD)
-                                      : const Color(0xFF00382E),
+                                      ? const Color(0xFFFF8A80)
+                                      : const Color(0xFFC62828),
                                 ),
                                 const SizedBox(width: 5),
                                 Text(
@@ -617,8 +706,8 @@ class _AdhkarDetailScreenState extends State<AdhkarDetailScreen> {
                                     fontSize: 12,
                                     fontWeight: FontWeight.w800,
                                     color: isDark
-                                        ? const Color(0xFFAFEFDD)
-                                        : const Color(0xFF00382E),
+                                        ? const Color(0xFFFF8A80)
+                                        : const Color(0xFFC62828),
                                   ),
                                 ),
                               ],
